@@ -1,14 +1,18 @@
 package com.temenos.dshubhamrajput.genericnet;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 
 public class TransferOtherBnk extends AppCompatActivity {
+    public String intentData;
+    public Intent commit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,17 @@ public class TransferOtherBnk extends AppCompatActivity {
                 if (!hasFocus) {
                     hideKeyboard(v);
                 }
+            }
+        });
+        Button fundsTransfer = (Button) findViewById(R.id.button);
+        fundsTransfer.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                intentData = "account";
+                commit=new Intent(arg0.getContext(),ConfirmPage.class);
+                commit.putExtra("getintent",intentData);
+                startActivity(commit);
             }
         });
     }

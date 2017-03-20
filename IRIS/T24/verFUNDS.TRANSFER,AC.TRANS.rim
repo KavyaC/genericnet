@@ -1,0 +1,834 @@
+domain T24 {
+    use common.CoreCommands.*
+    use common.HTTPEvents.*
+    use common.ODataCommands.*
+    use common.T24Commands.*
+    use common.T24Events.*
+    use common.NextState.*
+    use common.Errors.*
+    use T24.ContextEnquiry.*
+    rim verFundsTransfer_AcTrans {
+        command T24SilentState
+        command T24FieldMetadata
+        command NoopGET
+        command GETEntities
+        command GetLiveEntity
+        command GetIauthEntity
+        command GetHauthEntity
+        command GetIauthEntities
+        command CreateEntity
+        command InputEntity
+        command HoldEntity
+        command AuthoriseEntity
+        command GetChangedValues
+        command ReviewEntity
+        command ReverseEntity
+        command GetReversedEntity
+        command ValidateEntity
+        command GetRauthEntity
+        command RestoreEntity
+        command DeleteEntity
+        command CopyEntity
+        command PasteEntity
+        command CreateDEPreview
+        command GetDealSlipEntities
+        command T24Enrichment
+        command CheckAutoIdSupport
+        command GetHauthEntities
+        command T24NextState
+        basepath: "/{companyid}"
+    
+        resource verFundsTransfer_AcTrans_errorHandler {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : NoopGET ]
+            relations [ "http://temenostech.temenos.com/rels/error" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/error"
+            GET +-> ProcessErrors {
+                title: "errors"
+            }
+            POST +-> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+        }
+    
+        resource verFundsTransfer_AcTranss {
+            type: collection
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GETEntities {
+                properties [ filter = "{filter}" ]
+                } ]
+            path: "/verFundsTransfer_AcTranss()"
+            GET *-> verFundsTransfer_AcTrans {
+                parameters [ id = "{RefNo}" ]
+            }
+            GET *-> verFundsTransfer_AcTrans_see {
+                parameters [ id = "{RefNo}" ]
+                title: "see record"
+            }
+            POST -> verFundsTransfer_AcTrans_new {
+                title: "create new deal"
+                condition: OK(verFundsTransfer_AcTrans_autoId)
+            }
+            POST -> verFundsTransfer_AcTrans_populate {
+                title: "populate existing deal"
+            }
+            PUT *-> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            POST *-> verFundsTransfer_AcTrans_audit {
+                parameters [ id = "{RefNo}" ]
+                title: "audit deal"
+            }
+            POST *-> verFundsTransfer_AcTrans_reverse {
+                parameters [ id = "{RefNo}" ]
+                title: "reverse deal"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetLiveEntity ]
+            path: "/verFundsTransfer_AcTranss('{id}')"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST +-> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            GET --> verFundsTransfer_AcTrans_IAuth {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans_IAuth)
+            }
+            GET --> verFundsTransfer_AcTrans_RAuth {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans_RAuth)
+            }
+            POST -> verFundsTransfer_AcTrans_validate {
+                parameters [ id = "{RefNo}" ]
+                title: "validate deal"
+            }
+            PUT -> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            POST -> verFundsTransfer_AcTrans_audit {
+                parameters [ id = "{RefNo}" ]
+                title: "audit deal"
+            }
+            POST -> verFundsTransfer_AcTrans_reverse {
+                parameters [ id = "{RefNo}" ]
+                title: "reverse deal"
+            }
+            POST -> verFundsTransfer_AcTrans_hold {
+                parameters [ id = "{RefNo}" ]
+                title: "hold deal"
+            }
+            POST -> verFundsTransfer_AcTrans_deliveryPreview {
+                parameters [ id = "{RefNo}" ]
+                title: "delivery preview"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_see" {
+                parameters [ id = "@" ]
+                title: "See transaction"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_IAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_HAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_IAuth" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_HAuth" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> verFundsTransfer_AcTrans_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_silent {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : T24SilentState ]
+        }
+    
+        resource verFundsTransfer_AcTrans_see {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetLiveEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verFundsTransfer_AcTrans","http://temenostech.temenos.com/rels/see" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/see"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST +-> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            GET -> verFundsTransfer_AcTrans_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_IAuth_see {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetIauthEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verFundsTransfer_AcTrans_IAuth","http://temenostech.temenos.com/rels/see" ]
+            path: "/verFundsTransfer_AcTranss_IAuth('{id}')/see"
+        }
+    
+        resource verFundsTransfer_AcTrans_HAuth_see {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetHauthEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verFundsTransfer_AcTrans_HAuth","http://temenostech.temenos.com/rels/see" ]
+            path: "/verFundsTransfer_AcTranss_HAuth('{id}')/see"
+        }
+    
+        resource verFundsTransfer_AcTrans_ContextEnquiries {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : NoopGET ]
+            path: "/verFundsTransfer_AcTrans/ContextEnquiries"
+            GET -> "T24.enqlistFundsTransfer.enqlistFundsTransfers" {
+                parameters [ param = "list" ]
+                title: "List Live File"
+            }
+            GET -> "T24.enqlistFundsTransfer.enqlistFundsTransfersUnauth" {
+                parameters [ param = "list" ]
+                title: "List Unauth File"
+            }
+            GET -> "T24.enqlistFundsTransfer.enqlistFundsTransfersHist" {
+                parameters [ param = "list" ]
+                title: "List History File"
+            }
+            GET -> "T24.enqlistFundsTransfer.enqlistFundsTransfers" {
+                title: "Search Live File"
+            }
+            GET -> "T24.enqlistFundsTransfer.enqlistFundsTransfersUnauth" {
+                title: "Search Unauth File"
+            }
+            GET -> "T24.enqlistFundsTransfer.enqlistFundsTransfersHist" {
+                title: "Search History File"
+            }
+            GET +-> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Other context Enquiries"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_metadata {
+            type: collection
+            entity: T24FieldMetadata
+            commands [ POST : T24FieldMetadata ]
+            relations [ "http://temenostech.temenos.com/rels/metadata" ]
+            path: "/verFundsTransfer_AcTranss()/metadata"
+        }
+    
+        resource verFundsTransfer_AcTranss_IAuth {
+            type: collection
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetIauthEntities {
+                properties [ filter = "{filter}" ]
+                } ]
+            path: "/verFundsTransfer_AcTranss_IAuth()"
+            GET *-> verFundsTransfer_AcTrans_IAuth {
+                parameters [ id = "{RefNo}" ]
+            }
+            POST -> verFundsTransfer_AcTrans_new {
+                title: "create new deal"
+                condition: OK(verFundsTransfer_AcTrans_autoId)
+            }
+            POST -> verFundsTransfer_AcTrans_populate {
+                title: "populate existing deal"
+            }
+            PUT *-> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            DELETE *-> verFundsTransfer_AcTrans_delete {
+                parameters [ id = "{RefNo}" ]
+                title: "delete"
+            }
+            PUT *-> verFundsTransfer_AcTrans_authorise {
+                parameters [ id = "{RefNo}" ]
+                title: "authorise deal"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_new {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ POST : CreateEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verFundsTransfer_AcTrans","http://temenostech.temenos.com/rels/new" ]
+            path: "/verFundsTransfer_AcTranss()/new"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST +-> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            POST -> verFundsTransfer_AcTrans_validate {
+                parameters [ id = "{RefNo}" ]
+                title: "validate deal"
+            }
+            PUT -> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            POST -> verFundsTransfer_AcTrans_hold {
+                parameters [ id = "{RefNo}" ]
+                title: "hold deal"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_see" {
+                parameters [ id = "@" ]
+                title: "See transaction"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_IAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_HAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_IAuth" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_HAuth" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            POST -> verFundsTransfer_AcTrans_deliveryPreview {
+                parameters [ id = "{RefNo}" ]
+                title: "delivery preview"
+            }
+            GET -> verFundsTransfer_AcTrans_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_input {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ PUT : InputEntity, POST : InputEntity ]
+            relations [ "http://temenostech.temenos.com/rels/input" ]
+            path: "/verFundsTransfer_AcTranss('{id}')"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            GET --> nextState {
+                condition: OK(nextState)
+            }
+            GET --> verFundsTransfer_AcTrans_IAuth {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans_IAuth)
+            }
+            GET --> verFundsTransfer_AcTrans {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans)
+            }
+            GET -> verFundsTransfer_AcTrans_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Context Enquiries"
+            }
+            onerror --> T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_errorHandler
+        }
+    
+        resource verFundsTransfer_AcTrans_hold {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ POST : HoldEntity ]
+            relations [ "http://temenostech.temenos.com/rels/hold" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/hold"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            PUT -> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            DELETE -> verFundsTransfer_AcTrans_delete {
+                parameters [ id = "{RefNo}" ]
+                title: "delete"
+            }
+            POST -> verFundsTransfer_AcTrans_validate {
+                parameters [ id = "{RefNo}" ]
+                title: "validate deal"
+            }
+            onerror --> common.Errors.Errors
+        }
+    
+        resource verFundsTransfer_AcTrans_authorise {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ PUT : AuthoriseEntity ]
+            relations [ "http://temenostech.temenos.com/rels/authorise" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/authorise"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            GET --> nextState {
+                condition: OK(nextState)
+            }
+            GET --> verFundsTransfer_AcTrans_IAuth {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans_IAuth)
+            }
+            GET --> verFundsTransfer_AcTrans {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans)
+            }
+            GET --> verFundsTransfer_AcTrans_reversed {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans_reversed)
+            }
+            GET -> verFundsTransfer_AcTrans_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Context Enquiries"
+            }
+            onerror --> T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_errorHandler
+        }
+    
+        resource verFundsTransfer_AcTrans_changedValues {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetChangedValues ]
+            relations [ "http://temenostech.temenos.com/rels/changedValues" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/changedValues"
+        }
+    
+        resource verFundsTransfer_AcTrans_audit {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ POST : ReviewEntity ]
+            relations [ "http://temenostech.temenos.com/rels/review" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/review"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            GET -> verFundsTransfer_AcTrans {
+                parameters [ id = "{RefNo}" ]
+            }
+            onerror --> common.Errors.Errors
+        }
+    
+        resource verFundsTransfer_AcTrans_reverse {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ PUT : ReverseEntity ]
+            relations [ "http://temenostech.temenos.com/rels/reverse" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/reverse"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            GET --> verFundsTransfer_AcTrans_RAuth {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans_RAuth)
+            }
+            onerror --> T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_errorHandler
+        }
+    
+        resource verFundsTransfer_AcTrans_reversed {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetReversedEntity ]
+            path: "/verFundsTransfer_AcTranss_reversed('{id}')"
+        }
+    
+        resource verFundsTransfer_AcTrans_validate {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ POST : ValidateEntity ]
+            relations [ "http://temenostech.temenos.com/rels/validate" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/validate"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST +-> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            PUT -> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            POST -> verFundsTransfer_AcTrans_hold {
+                parameters [ id = "{RefNo}" ]
+                title: "hold deal"
+            }
+            onerror --> T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_errorHandler
+        }
+    
+        resource verFundsTransfer_AcTrans_IAuth {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetIauthEntity ]
+            path: "/verFundsTransfer_AcTranss_IAuth('{id}')"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST +-> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            GET +-> verFundsTransfer_AcTrans_changedValues {
+                parameters [ id = "{RefNo}" ]
+                title: "changed values"
+            }
+            POST -> verFundsTransfer_AcTrans_validate {
+                parameters [ id = "{RefNo}" ]
+                title: "validate deal"
+            }
+            PUT -> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            POST -> verFundsTransfer_AcTrans_hold {
+                parameters [ id = "{RefNo}" ]
+                title: "hold deal"
+            }
+            POST -> verFundsTransfer_AcTrans_authorise {
+                parameters [ id = "{RefNo}" ]
+                title: "authorise deal"
+            }
+            DELETE -> verFundsTransfer_AcTrans_delete {
+                parameters [ id = "{RefNo}" ]
+                title: "delete"
+            }
+            GET -> verFundsTransfer_AcTrans_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_RAuth {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetRauthEntity ]
+            path: "/verFundsTransfer_AcTranss_RAuth('{id}')"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST +-> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            POST -> verFundsTransfer_AcTrans_authorise {
+                parameters [ id = "{RefNo}" ]
+                title: "authorise deal"
+            }
+            DELETE -> verFundsTransfer_AcTrans_delete {
+                parameters [ id = "{RefNo}" ]
+                title: "delete"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_delete {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ DELETE : DeleteEntity ]
+            relations [ "http://temenostech.temenos.com/rels/delete" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/delete"
+        }
+    
+        resource verFundsTransfer_AcTransEntry {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : NoopGET ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verFundsTransfer_AcTrans","http://temenostech.temenos.com/rels/contract" ]
+            path: "/verFundsTransfer_AcTransEntry"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST -> verFundsTransfer_AcTrans_new {
+                title: "create new deal"
+                condition: OK(verFundsTransfer_AcTrans_autoId)
+            }
+            POST -> verFundsTransfer_AcTrans_populate {
+                title: "populate existing deal"
+            }
+            GET -> verFundsTransfer_AcTrans {
+                parameters [ id = "@" ]
+                title: "action"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_see" {
+                parameters [ id = "@" ]
+                title: "See transaction"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_IAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_HAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_IAuth" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_HAuth" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET +-> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_ContextEnquiries" {
+                title: "All context Enquiries"
+            }
+            POST -> verFundsTransfer_AcTrans_copy {
+                title: "Copy deal"
+            }
+            POST -> verFundsTransfer_AcTrans_paste {
+                parameters [ id = "{RefNo}" ]
+                title: "Paste deal"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_populate {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ POST : CreateEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verFundsTransfer_AcTrans","http://temenostech.temenos.com/rels/populate" ]
+            path: "/verFundsTransfer_AcTranss()/populate"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST -> verFundsTransfer_AcTrans_validate {
+                parameters [ id = "{RefNo}" ]
+                title: "validate deal"
+            }
+            POST -> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            POST -> verFundsTransfer_AcTrans_hold {
+                parameters [ id = "{RefNo}" ]
+                title: "hold deal"
+            }
+            DELETE -> verFundsTransfer_AcTrans_delete {
+                parameters [ id = "{RefNo}" ]
+                title: "delete"
+                condition: OK(verFundsTransfer_AcTrans_IAuth)
+            }
+            POST -> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_see" {
+                parameters [ id = "@" ]
+                title: "See transaction"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_IAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_HAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_IAuth" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verFundsTransfer_AcTrans.verFundsTransfer_AcTrans_HAuth" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> verFundsTransfer_AcTrans_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_copy {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ POST : CopyEntity ]
+            relations [ "http://temenostech.temenos.com/rels/copy" ]
+            path: "/verFundsTransfer_AcTranss()/copy"
+        }
+    
+        resource verFundsTransfer_AcTrans_paste {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ POST : PasteEntity ]
+            relations [ "http://temenostech.temenos.com/rels/paste" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/paste"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST +-> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            POST -> verFundsTransfer_AcTrans_validate {
+                parameters [ id = "{RefNo}" ]
+                title: "validate deal"
+            }
+            PUT -> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            POST -> verFundsTransfer_AcTrans_hold {
+                parameters [ id = "{RefNo}" ]
+                title: "hold deal"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_deliveryPreview {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ POST : CreateDEPreview ]
+            relations [ "http://temenostech.temenos.com/rels/deliveryPreview" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/deliveryPreview"
+            GET +-> "T24.enqDePreview.enqDePreviews" {
+                parameters [ filter = "ContractId eq '{id}'" ]
+                title: "delivery preview enquiry"
+            }
+        }
+    
+        resource verFundsTransfer_AcTranss_enrichment {
+            type: item
+            entity: Enrichment
+            commands [ GET : T24Enrichment {
+                properties [ entity = "verFundsTransfer_AcTrans" ]
+                } ]
+            relations [ "http://temenostech.temenos.com/rels/enrichment" ]
+            path: "/verFundsTransfer_AcTranss()/enrichment"
+        }
+    
+        resource verFundsTransfer_AcTrans_autoId {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : CheckAutoIdSupport ]
+        }
+    
+        resource verFundsTransfer_AcTrans_restore {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ POST : RestoreEntity ]
+            relations [ "http://temenostech.temenos.com/rels/restore" ]
+            path: "/verFundsTransfer_AcTranss('{id}')/restore"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            GET --> verFundsTransfer_AcTrans_IAuth {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans_IAuth)
+            }
+            GET --> verFundsTransfer_AcTrans {
+                parameters [ id = "{RefNo}" ]
+                condition: OK(verFundsTransfer_AcTrans)
+            }
+            POST -> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            GET -> verFundsTransfer_AcTrans_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Context Enquiries"
+            }
+            onerror --> common.Errors.Errors
+        }
+    
+        resource verFundsTransfer_AcTranss_HAuth {
+            type: collection
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetHauthEntities {
+                properties [ filter = "{filter}" ]
+                } ]
+            path: "/verFundsTransfer_AcTranss_HAuth()"
+            GET *-> verFundsTransfer_AcTrans_HAuth {
+                parameters [ id = "{RefNo}" ]
+            }
+            POST -> verFundsTransfer_AcTrans_new {
+                title: "create new deal"
+                condition: OK(verFundsTransfer_AcTrans_autoId)
+            }
+            POST -> verFundsTransfer_AcTrans_populate {
+                title: "populate existing deal"
+            }
+            POST *-> verFundsTransfer_AcTrans_restore {
+                parameters [ id = "{RefNo}" ]
+                title: "restore deal"
+            }
+        }
+    
+        resource verFundsTransfer_AcTrans_HAuth {
+            type: item
+            entity: verFundsTransfer_AcTrans
+            commands [ GET : GetHauthEntity ]
+            path: "/verFundsTransfer_AcTranss_HAuth('{id}')"
+            GET --> verFundsTransfer_AcTrans_silent {
+                condition: OK(verFundsTransfer_AcTrans_silent)
+            }
+            POST +-> verFundsTransfer_AcTrans_metadata {
+                title: "metadata"
+            }
+            POST -> verFundsTransfer_AcTrans_validate {
+                parameters [ id = "{RefNo}" ]
+                title: "validate deal"
+            }
+            PUT -> verFundsTransfer_AcTrans_input {
+                parameters [ id = "{RefNo}" ]
+                title: "input deal"
+            }
+            POST -> verFundsTransfer_AcTrans_hold {
+                parameters [ id = "{RefNo}" ]
+                title: "hold deal"
+            }
+            POST -> verFundsTransfer_AcTrans_authorise {
+                parameters [ id = "{RefNo}" ]
+                title: "authorise deal"
+            }
+            DELETE -> verFundsTransfer_AcTrans_delete {
+                parameters [ id = "{RefNo}" ]
+                title: "delete"
+            }
+            POST -> verFundsTransfer_AcTrans_restore {
+                parameters [ id = "{RefNo}" ]
+                title: "restore deal"
+            }
+            GET -> verFundsTransfer_AcTrans_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verFundsTransfer_AcTrans" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+    }
+    
+}

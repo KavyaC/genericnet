@@ -1,0 +1,814 @@
+domain T24 {
+    use common.CoreCommands.*
+    use common.HTTPEvents.*
+    use common.ODataCommands.*
+    use common.T24Commands.*
+    use common.T24Events.*
+    use common.NextState.*
+    use common.Errors.*
+    use T24.ContextEnquiry.*
+    rim verBeneficiary_Wbnk {
+        command T24SilentState
+        command T24FieldMetadata
+        command NoopGET
+        command GETEntities
+        command GetLiveEntity
+        command GetIauthEntity
+        command GetHauthEntity
+        command GetIauthEntities
+        command CreateEntity
+        command InputEntity
+        command HoldEntity
+        command AuthoriseEntity
+        command GetChangedValues
+        command ReviewEntity
+        command ReverseEntity
+        command GetReversedEntity
+        command ValidateEntity
+        command GetRauthEntity
+        command RestoreEntity
+        command DeleteEntity
+        command CopyEntity
+        command PasteEntity
+        command CreateDEPreview
+        command GetDealSlipEntities
+        command T24Enrichment
+        command CheckAutoIdSupport
+        command GetHauthEntities
+        command T24NextState
+        basepath: "/{companyid}"
+    
+        resource verBeneficiary_Wbnk_errorHandler {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : NoopGET ]
+            relations [ "http://temenostech.temenos.com/rels/error" ]
+            path: "/verBeneficiary_Wbnks('{id}')/error"
+            GET +-> ProcessErrors {
+                title: "errors"
+            }
+            POST +-> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+        }
+    
+        resource verBeneficiary_Wbnks {
+            type: collection
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GETEntities {
+                properties [ filter = "{filter}" ]
+                } ]
+            path: "/verBeneficiary_Wbnks()"
+            GET *-> verBeneficiary_Wbnk {
+                parameters [ id = "{BeneficiaryId}" ]
+            }
+            GET *-> verBeneficiary_Wbnk_see {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "see record"
+            }
+            POST -> verBeneficiary_Wbnk_new {
+                title: "create new deal"
+                condition: OK(verBeneficiary_Wbnk_autoId)
+            }
+            POST -> verBeneficiary_Wbnk_populate {
+                title: "populate existing deal"
+            }
+            PUT *-> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            POST *-> verBeneficiary_Wbnk_audit {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "audit deal"
+            }
+            POST *-> verBeneficiary_Wbnk_reverse {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "reverse deal"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetLiveEntity ]
+            path: "/verBeneficiary_Wbnks('{id}')"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST +-> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            GET --> verBeneficiary_Wbnk_IAuth {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk_IAuth)
+            }
+            GET --> verBeneficiary_Wbnk_RAuth {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk_RAuth)
+            }
+            POST -> verBeneficiary_Wbnk_validate {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "validate deal"
+            }
+            PUT -> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            POST -> verBeneficiary_Wbnk_audit {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "audit deal"
+            }
+            POST -> verBeneficiary_Wbnk_reverse {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "reverse deal"
+            }
+            POST -> verBeneficiary_Wbnk_hold {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "hold deal"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_see" {
+                parameters [ id = "@" ]
+                title: "See transaction"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_IAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_HAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_IAuth" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_HAuth" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> verBeneficiary_Wbnk_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_silent {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : T24SilentState ]
+        }
+    
+        resource verBeneficiary_Wbnk_see {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetLiveEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verBeneficiary_Wbnk","http://temenostech.temenos.com/rels/see" ]
+            path: "/verBeneficiary_Wbnks('{id}')/see"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST +-> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            GET -> verBeneficiary_Wbnk_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_IAuth_see {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetIauthEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verBeneficiary_Wbnk_IAuth","http://temenostech.temenos.com/rels/see" ]
+            path: "/verBeneficiary_Wbnks_IAuth('{id}')/see"
+        }
+    
+        resource verBeneficiary_Wbnk_HAuth_see {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetHauthEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verBeneficiary_Wbnk_HAuth","http://temenostech.temenos.com/rels/see" ]
+            path: "/verBeneficiary_Wbnks_HAuth('{id}')/see"
+        }
+    
+        resource verBeneficiary_Wbnk_ContextEnquiries {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : NoopGET ]
+            path: "/verBeneficiary_Wbnk/ContextEnquiries"
+            GET -> "T24.enqlistBeneficiary.enqlistBeneficiarys" {
+                parameters [ param = "list" ]
+                title: "List Live File"
+            }
+            GET -> "T24.enqlistBeneficiary.enqlistBeneficiarysUnauth" {
+                parameters [ param = "list" ]
+                title: "List Unauth File"
+            }
+            GET -> "T24.enqlistBeneficiary.enqlistBeneficiarysHist" {
+                parameters [ param = "list" ]
+                title: "List History File"
+            }
+            GET -> "T24.enqlistBeneficiary.enqlistBeneficiarys" {
+                title: "Search Live File"
+            }
+            GET -> "T24.enqlistBeneficiary.enqlistBeneficiarysUnauth" {
+                title: "Search Unauth File"
+            }
+            GET -> "T24.enqlistBeneficiary.enqlistBeneficiarysHist" {
+                title: "Search History File"
+            }
+            GET +-> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Other context Enquiries"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_metadata {
+            type: collection
+            entity: T24FieldMetadata
+            commands [ POST : T24FieldMetadata ]
+            relations [ "http://temenostech.temenos.com/rels/metadata" ]
+            path: "/verBeneficiary_Wbnks()/metadata"
+        }
+    
+        resource verBeneficiary_Wbnks_IAuth {
+            type: collection
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetIauthEntities {
+                properties [ filter = "{filter}" ]
+                } ]
+            path: "/verBeneficiary_Wbnks_IAuth()"
+            GET *-> verBeneficiary_Wbnk_IAuth {
+                parameters [ id = "{BeneficiaryId}" ]
+            }
+            POST -> verBeneficiary_Wbnk_new {
+                title: "create new deal"
+                condition: OK(verBeneficiary_Wbnk_autoId)
+            }
+            POST -> verBeneficiary_Wbnk_populate {
+                title: "populate existing deal"
+            }
+            PUT *-> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            DELETE *-> verBeneficiary_Wbnk_delete {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "delete"
+            }
+            PUT *-> verBeneficiary_Wbnk_authorise {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "authorise deal"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_new {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ POST : CreateEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verBeneficiary_Wbnk","http://temenostech.temenos.com/rels/new" ]
+            path: "/verBeneficiary_Wbnks()/new"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST +-> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            POST -> verBeneficiary_Wbnk_validate {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "validate deal"
+            }
+            PUT -> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            POST -> verBeneficiary_Wbnk_hold {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "hold deal"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_see" {
+                parameters [ id = "@" ]
+                title: "See transaction"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_IAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_HAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_IAuth" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_HAuth" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> verBeneficiary_Wbnk_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_input {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ PUT : InputEntity, POST : InputEntity ]
+            relations [ "http://temenostech.temenos.com/rels/input" ]
+            path: "/verBeneficiary_Wbnks('{id}')"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            GET --> nextState {
+                condition: OK(nextState)
+            }
+            GET --> verBeneficiary_Wbnk_IAuth {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk_IAuth)
+            }
+            GET --> verBeneficiary_Wbnk {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk)
+            }
+            GET -> verBeneficiary_Wbnk_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Context Enquiries"
+            }
+            onerror --> T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_errorHandler
+        }
+    
+        resource verBeneficiary_Wbnk_hold {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ POST : HoldEntity ]
+            relations [ "http://temenostech.temenos.com/rels/hold" ]
+            path: "/verBeneficiary_Wbnks('{id}')/hold"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            PUT -> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            DELETE -> verBeneficiary_Wbnk_delete {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "delete"
+            }
+            POST -> verBeneficiary_Wbnk_validate {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "validate deal"
+            }
+            onerror --> common.Errors.Errors
+        }
+    
+        resource verBeneficiary_Wbnk_authorise {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ PUT : AuthoriseEntity ]
+            relations [ "http://temenostech.temenos.com/rels/authorise" ]
+            path: "/verBeneficiary_Wbnks('{id}')/authorise"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            GET --> nextState {
+                condition: OK(nextState)
+            }
+            GET --> verBeneficiary_Wbnk_IAuth {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk_IAuth)
+            }
+            GET --> verBeneficiary_Wbnk {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk)
+            }
+            GET --> verBeneficiary_Wbnk_reversed {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk_reversed)
+            }
+            GET -> verBeneficiary_Wbnk_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Context Enquiries"
+            }
+            onerror --> T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_errorHandler
+        }
+    
+        resource verBeneficiary_Wbnk_changedValues {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetChangedValues ]
+            relations [ "http://temenostech.temenos.com/rels/changedValues" ]
+            path: "/verBeneficiary_Wbnks('{id}')/changedValues"
+        }
+    
+        resource verBeneficiary_Wbnk_audit {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ POST : ReviewEntity ]
+            relations [ "http://temenostech.temenos.com/rels/review" ]
+            path: "/verBeneficiary_Wbnks('{id}')/review"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            GET -> verBeneficiary_Wbnk {
+                parameters [ id = "{BeneficiaryId}" ]
+            }
+            onerror --> common.Errors.Errors
+        }
+    
+        resource verBeneficiary_Wbnk_reverse {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ PUT : ReverseEntity ]
+            relations [ "http://temenostech.temenos.com/rels/reverse" ]
+            path: "/verBeneficiary_Wbnks('{id}')/reverse"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            GET --> verBeneficiary_Wbnk_RAuth {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk_RAuth)
+            }
+            onerror --> T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_errorHandler
+        }
+    
+        resource verBeneficiary_Wbnk_reversed {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetReversedEntity ]
+            path: "/verBeneficiary_Wbnks_reversed('{id}')"
+        }
+    
+        resource verBeneficiary_Wbnk_validate {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ POST : ValidateEntity ]
+            relations [ "http://temenostech.temenos.com/rels/validate" ]
+            path: "/verBeneficiary_Wbnks('{id}')/validate"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST +-> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            PUT -> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            POST -> verBeneficiary_Wbnk_hold {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "hold deal"
+            }
+            onerror --> T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_errorHandler
+        }
+    
+        resource verBeneficiary_Wbnk_IAuth {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetIauthEntity ]
+            path: "/verBeneficiary_Wbnks_IAuth('{id}')"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST +-> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            GET +-> verBeneficiary_Wbnk_changedValues {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "changed values"
+            }
+            POST -> verBeneficiary_Wbnk_validate {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "validate deal"
+            }
+            PUT -> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            POST -> verBeneficiary_Wbnk_hold {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "hold deal"
+            }
+            POST -> verBeneficiary_Wbnk_authorise {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "authorise deal"
+            }
+            DELETE -> verBeneficiary_Wbnk_delete {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "delete"
+            }
+            GET -> verBeneficiary_Wbnk_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_RAuth {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetRauthEntity ]
+            path: "/verBeneficiary_Wbnks_RAuth('{id}')"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST +-> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            POST -> verBeneficiary_Wbnk_authorise {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "authorise deal"
+            }
+            DELETE -> verBeneficiary_Wbnk_delete {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "delete"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_delete {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ DELETE : DeleteEntity ]
+            relations [ "http://temenostech.temenos.com/rels/delete" ]
+            path: "/verBeneficiary_Wbnks('{id}')/delete"
+        }
+    
+        resource verBeneficiary_WbnkEntry {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : NoopGET ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verBeneficiary_Wbnk","http://temenostech.temenos.com/rels/contract" ]
+            path: "/verBeneficiary_WbnkEntry"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST -> verBeneficiary_Wbnk_new {
+                title: "create new deal"
+                condition: OK(verBeneficiary_Wbnk_autoId)
+            }
+            POST -> verBeneficiary_Wbnk_populate {
+                title: "populate existing deal"
+            }
+            GET -> verBeneficiary_Wbnk {
+                parameters [ id = "@" ]
+                title: "action"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_see" {
+                parameters [ id = "@" ]
+                title: "See transaction"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_IAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_HAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_IAuth" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_HAuth" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET +-> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_ContextEnquiries" {
+                title: "All context Enquiries"
+            }
+            POST -> verBeneficiary_Wbnk_copy {
+                title: "Copy deal"
+            }
+            POST -> verBeneficiary_Wbnk_paste {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "Paste deal"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_populate {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ POST : CreateEntity ]
+            relations [ "http://schemas.microsoft.com/ado/2007/08/dataservices/related/verBeneficiary_Wbnk","http://temenostech.temenos.com/rels/populate" ]
+            path: "/verBeneficiary_Wbnks()/populate"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST -> verBeneficiary_Wbnk_validate {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "validate deal"
+            }
+            POST -> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            POST -> verBeneficiary_Wbnk_hold {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "hold deal"
+            }
+            DELETE -> verBeneficiary_Wbnk_delete {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "delete"
+                condition: OK(verBeneficiary_Wbnk_IAuth)
+            }
+            POST -> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_see" {
+                parameters [ id = "@" ]
+                title: "See transaction"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_IAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_HAuth_see" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_IAuth" {
+                parameters [ id = "@" ]
+                title: "GetIauthEntity"
+            }
+            GET -> "T24.verBeneficiary_Wbnk.verBeneficiary_Wbnk_HAuth" {
+                parameters [ id = "@" ]
+                title: "GetHauthEntity"
+            }
+            GET -> verBeneficiary_Wbnk_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_copy {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ POST : CopyEntity ]
+            relations [ "http://temenostech.temenos.com/rels/copy" ]
+            path: "/verBeneficiary_Wbnks()/copy"
+        }
+    
+        resource verBeneficiary_Wbnk_paste {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ POST : PasteEntity ]
+            relations [ "http://temenostech.temenos.com/rels/paste" ]
+            path: "/verBeneficiary_Wbnks('{id}')/paste"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST +-> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            POST -> verBeneficiary_Wbnk_validate {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "validate deal"
+            }
+            PUT -> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            POST -> verBeneficiary_Wbnk_hold {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "hold deal"
+            }
+        }
+    
+        resource verBeneficiary_Wbnks_enrichment {
+            type: item
+            entity: Enrichment
+            commands [ GET : T24Enrichment {
+                properties [ entity = "verBeneficiary_Wbnk" ]
+                } ]
+            relations [ "http://temenostech.temenos.com/rels/enrichment" ]
+            path: "/verBeneficiary_Wbnks()/enrichment"
+        }
+    
+        resource verBeneficiary_Wbnk_autoId {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : CheckAutoIdSupport ]
+        }
+    
+        resource verBeneficiary_Wbnk_restore {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ POST : RestoreEntity ]
+            relations [ "http://temenostech.temenos.com/rels/restore" ]
+            path: "/verBeneficiary_Wbnks('{id}')/restore"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            GET --> verBeneficiary_Wbnk_IAuth {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk_IAuth)
+            }
+            GET --> verBeneficiary_Wbnk {
+                parameters [ id = "{BeneficiaryId}" ]
+                condition: OK(verBeneficiary_Wbnk)
+            }
+            POST -> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            GET -> verBeneficiary_Wbnk_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Context Enquiries"
+            }
+            onerror --> common.Errors.Errors
+        }
+    
+        resource verBeneficiary_Wbnks_HAuth {
+            type: collection
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetHauthEntities {
+                properties [ filter = "{filter}" ]
+                } ]
+            path: "/verBeneficiary_Wbnks_HAuth()"
+            GET *-> verBeneficiary_Wbnk_HAuth {
+                parameters [ id = "{BeneficiaryId}" ]
+            }
+            POST -> verBeneficiary_Wbnk_new {
+                title: "create new deal"
+                condition: OK(verBeneficiary_Wbnk_autoId)
+            }
+            POST -> verBeneficiary_Wbnk_populate {
+                title: "populate existing deal"
+            }
+            POST *-> verBeneficiary_Wbnk_restore {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "restore deal"
+            }
+        }
+    
+        resource verBeneficiary_Wbnk_HAuth {
+            type: item
+            entity: verBeneficiary_Wbnk
+            commands [ GET : GetHauthEntity ]
+            path: "/verBeneficiary_Wbnks_HAuth('{id}')"
+            GET --> verBeneficiary_Wbnk_silent {
+                condition: OK(verBeneficiary_Wbnk_silent)
+            }
+            POST +-> verBeneficiary_Wbnk_metadata {
+                title: "metadata"
+            }
+            POST -> verBeneficiary_Wbnk_validate {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "validate deal"
+            }
+            PUT -> verBeneficiary_Wbnk_input {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "input deal"
+            }
+            POST -> verBeneficiary_Wbnk_hold {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "hold deal"
+            }
+            POST -> verBeneficiary_Wbnk_authorise {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "authorise deal"
+            }
+            DELETE -> verBeneficiary_Wbnk_delete {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "delete"
+            }
+            POST -> verBeneficiary_Wbnk_restore {
+                parameters [ id = "{BeneficiaryId}" ]
+                title: "restore deal"
+            }
+            GET -> verBeneficiary_Wbnk_ContextEnquiries {
+                title: "All Context Enquiries"
+            }
+            GET -> "T24.ContextEnquiry.ContextEnquiryList" {
+                parameters [ entity = "verBeneficiary_Wbnk" ]
+                title: "Context Enquiries"
+            }
+        }
+    
+    }
+    
+}

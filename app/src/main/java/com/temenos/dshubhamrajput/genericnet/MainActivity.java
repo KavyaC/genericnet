@@ -32,13 +32,9 @@ import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
-
-    public ListView mDrawerList;
     public DrawerLayout mDrawerLayout;
-    private ArrayAdapter<String> mAdapter;
     public ActionBarDrawerToggle mDrawerToggle;
-    private String mActivityTitle;
-    public int backpress=0;
+    public int backpress = 0;
     SessionManager session1;
     ExpandableListView expandableListView;
     ExpandableListAdapter expandableListAdapter;
@@ -59,10 +55,7 @@ public class MainActivity extends AppCompatActivity {
         final Intent TransferBwAccounts = new Intent(MainActivity.this, TransferBwAccounts.class);
         final Intent TransferWithinBnk = new Intent(MainActivity.this, TransferWithinBnk.class);
         final Intent TransferOtherBnk = new Intent(MainActivity.this, TransferOtherBnk.class);
-        //mActivityTitle = getTitle().toString();
-//        TextView textView7 = (TextView) findViewById(R.id.textView7);
 
-//        addDrawerItems();
         setupDrawer();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -71,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         expandableListView = (ExpandableListView) findViewById(R.id.expandableListView);
         expandableListDetail = ExpandableListDataPump.getData();
         expandableListView.setGroupIndicator(getResources().getDrawable(R.drawable.state_list));
-        expandableListTitle = new ArrayList<String>(expandableListDetail.keySet());
+        expandableListTitle = new ArrayList<>(expandableListDetail.keySet());
         expandableListAdapter = new CustomExpandableListAdapter(this, expandableListTitle, expandableListDetail);
         expandableListView.setAdapter(expandableListAdapter);
 
@@ -118,12 +111,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v,
                                         int groupPosition, int childPosition, long id) {
-//
 
                 if (expandableListDetail.get(expandableListTitle.get(groupPosition)).get(childPosition).equals( "Add Beneficiary"))
 
@@ -187,9 +178,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
+        // as you specify a parent activity in AndroidManifest.xml
         //noinspection SimplifiableIfStatement
 
         // Activate the navigation drawer toggle
@@ -206,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             backpress = (backpress + 1);
-            if(backpress<1||backpress==1) {
+            if(backpress<1||backpress == 1) {
                 Toast.makeText(getApplicationContext(), " Press Back again to Exit ", Toast.LENGTH_SHORT).show();
             }
 

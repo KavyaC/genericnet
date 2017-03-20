@@ -1,0 +1,93 @@
+Screen FT_Contract:FUNDS_TRANSFER, AC_TRANS
+    t24Name: "FUNDS.TRANSFER,AC.TRANS"
+    metamodelVersion: "1.30.6"
+    numberOfAuthorisers: 0
+reportLocks: Yes
+
+TransactionFlow {
+    otherCompanyAccess: Yes
+}
+
+Presentation {
+    recordsPerPage: "1"
+    fieldsPerLine: "1"
+    language: en
+}
+
+Fields {
+    "TRANSACTION_TYPE" {
+
+        Presentation {
+            inputBehaviour: NoInput
+            column: 1
+        }
+
+        default: IF ( ) "NULL" THEN "AC"
+    }
+
+    "DEBIT_ACCT_NO" {
+
+        Presentation {
+            column: 2
+            mandatory: Yes
+            hotField: Yes
+        }
+
+        API {
+            validation-routines:
+                jBC: "AC.TRANS.VALIDATE"
+        }
+
+    }
+
+    "DEBIT_CURRENCY" {
+
+        Presentation {
+            inputBehaviour: NoInput
+            column: 3
+        }
+
+    }
+
+    "DEBIT_AMOUNT" {
+
+        Presentation {
+            column: 4
+            mandatory: Yes
+        }
+
+    }
+
+    "CREDIT_ACCT_NO" {
+
+        Presentation {
+            column: 5
+            mandatory: Yes
+            hotField: Yes
+        }
+
+        API {
+            validation-routines:
+                jBC: "AC.TRANS.VALIDATE1"
+        }
+
+    }
+
+    "CREDIT_CURRENCY" {
+
+        Presentation {
+            inputBehaviour: NoInput
+            column: 6
+        }
+
+    }
+
+    "Description" {
+
+        Presentation {
+            column: 7
+        }
+
+    }
+
+}

@@ -40,7 +40,8 @@
         <activity android:name=".TransferBwAccounts" />
         <activity android:name=".TransferWithinBnk" />
         <activity android:name=".TransferOtherBnk" />
-        <activity android:name=".ConfirmPage"></activity>
+        <activity android:name=".ConfirmPage" />
+        <activity android:name=".SucessPage"></activity>
     </application>
 
 </manifest>

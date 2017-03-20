@@ -5,28 +5,28 @@ domain T24 {
     use common.T24Commands.*
     use common.T24Events.*
     use common.NextState.*
-    rim enqAcctHome {
+    rim enqEnqWbnk {
         command GETEntities
         command GETEntity
         basepath: "/{companyid}"
     
-        resource enqAcctHomes {
+        resource enqEnqWbnks {
             type: collection
-            entity: enqAcctHome
+            entity: enqEnqWbnk
             commands [ GET : GETEntities {
                 properties [ filter = "{filter}" ]
                 } ]
-            path: "/enqAcctHomes()"
-            GET *-> enqAcctHome {
+            path: "/enqEnqWbnks()"
+            GET *-> enqEnqWbnk {
                 parameters [ id = "{PrimaryKey}" ]
             }
         }
     
-        resource enqAcctHome {
+        resource enqEnqWbnk {
             type: item
-            entity: enqAcctHome
+            entity: enqEnqWbnk
             commands [ GET : GETEntity ]
-            path: "/enqAcctHomes('{id}')"
+            path: "/enqEnqWbnks('{id}')"
         }
     
     }

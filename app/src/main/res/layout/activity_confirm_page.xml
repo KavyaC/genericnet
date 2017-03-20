@@ -131,7 +131,8 @@
         android:id="@+id/button2"
         android:layout_marginStart="42dp"
         android:layout_below="@+id/editText8"
-        android:layout_toEndOf="@+id/textView11" />
+        android:layout_toEndOf="@+id/textView11"
+        android:layout_alignParentLeft="true"/>
 
     <Button
         android:text="back"
@@ -141,5 +142,5 @@
         android:layout_marginEnd="39dp"
         android:layout_alignBaseline="@+id/button2"
         android:layout_alignBottom="@+id/button2"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentRight="true"/>
 </RelativeLayout>

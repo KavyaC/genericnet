@@ -1,7 +1,10 @@
 package com.temenos.dshubhamrajput.genericnet;
 
 import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,9 +20,14 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.temenos.dshubhamrajput.genericnet.AcctStmtActivity.context;
+
 public class TransferBwAccounts extends AppCompatActivity {
     private String TAG = MainActivity.class.getSimpleName();
     static public String RefNo="";
+    public String intentData;
+    public static String status;
+    public Intent commit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,14 +183,52 @@ public class TransferBwAccounts extends AppCompatActivity {
                 json = jsonObject.toString();
 
                 HttpHandler newObj = new HttpHandler();
-                response = newObj.postfunc(url,json);
+                status = newObj.postfunc(url,json);
+                if(status.equals("YES")) {
+                    intentData = "account";
+                    Bundle fundsTransferData = new Bundle();
+                    fundsTransferData.putString("RefNo", RefNo);
+                    fundsTransferData.putString("fromAccountNo", params[0]);
+                    fundsTransferData.putString("toAccountNo", params[1]);
+                    fundsTransferData.putString("description", params[2]);
+                    fundsTransferData.putString("amount", params[3]);
+                    fundsTransferData.putString("transType", params[4]);
+                    fundsTransferData.putString("Currency", params[5]);
+                    fundsTransferData.putString("getintent", intentData);
+
+                    commit = new Intent(TransferBwAccounts.this, ConfirmPage.class);
+                    commit.putExtras(fundsTransferData);
+                    return true;
+                }
+                    return false;
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
-
+            return true;
             // 11. return result
-            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            if(aBoolean){
+                startActivity(commit);
+            }
+            else{
+                new AlertDialog.Builder(TransferBwAccounts.this)
+                        .setTitle("Error")
+                        .setMessage("The value you entered are wrong, Please Recheck?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // continue with delete
+                                final Intent TransferBwAccounts = new Intent(TransferBwAccounts.this, TransferBwAccounts.class);
+                                finish();
+                                startActivity(TransferBwAccounts);
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
         }
     }
 
